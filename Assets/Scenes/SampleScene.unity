@@ -467,10 +467,10 @@ MonoBehaviour:
   m_DeadZoneHeight: 0
   m_DeadZoneDepth: 0
   m_UnlimitedSoftZone: 0
-  m_SoftZoneWidth: 0.13902463
-  m_SoftZoneHeight: 0.17353581
-  m_BiasX: -0.0000012862033
-  m_BiasY: 0.00000068694345
+  m_SoftZoneWidth: 0.18952973
+  m_SoftZoneHeight: 0.2273475
+  m_BiasX: -0.00000094346115
+  m_BiasY: 0.00000052434837
   m_CenterOnActivate: 1
   m_GroupFramingMode: 2
   m_AdjustmentMode: 0
@@ -498,15 +498,15 @@ MonoBehaviour:
   m_RecenterTarget: 0
   m_VerticalAxis:
     Value: 0
-    m_SpeedMode: 1
-    m_MaxSpeed: 2
+    m_SpeedMode: 0
+    m_MaxSpeed: 250
     m_AccelTime: 0.1
     m_DecelTime: 0.1
-    m_InputAxisName: Mouse Y
+    m_InputAxisName: Vertical_joyStick2
     m_InputAxisValue: 0
     m_InvertInput: 1
-    m_MinValue: -85
-    m_MaxValue: 85
+    m_MinValue: -70
+    m_MaxValue: 70
     m_Wrap: 0
     m_Recentering:
       m_enabled: 0
@@ -522,13 +522,13 @@ MonoBehaviour:
     m_LegacyVelocityFilterStrength: -1
   m_HorizontalAxis:
     Value: 0
-    m_SpeedMode: 1
-    m_MaxSpeed: 2
+    m_SpeedMode: 0
+    m_MaxSpeed: 250
     m_AccelTime: 0.1
     m_DecelTime: 0.1
-    m_InputAxisName: Mouse X
+    m_InputAxisName: Horizontal_joyStick2
     m_InputAxisValue: 0
-    m_InvertInput: 0
+    m_InvertInput: 1
     m_MinValue: -180
     m_MaxValue: 180
     m_Wrap: 1
@@ -821,9 +821,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d773ff2f1efbec542aff033122ad1584, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 15
-  applySpeed: 0.2
+  MOVE_SPEED: 15
   refCamera: {fileID: 963194229}
+  life: 0
+  LIFE_MAX: 100
+  AVOID_SPEED: 3
+  AVOID_TIME: 0.3
 --- !u!65 &1218506763
 BoxCollider:
   m_ObjectHideFlags: 0
