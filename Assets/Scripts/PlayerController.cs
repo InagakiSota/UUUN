@@ -81,6 +81,22 @@ public class PlayerController : MonoBehaviour
 	//発射のフラグ
 	private bool m_isShot;
 
+	//足元の当たり判定用のオブジェクト
+	[SerializeField] private GameObject m_footCollider;
+	//足元の当たり判定のスクリプト
+	private FootCollider m_footColliderScript;
+
+	//チームの列挙体
+	public enum eTEAM
+	{
+		A,
+		B,
+	};
+	//チームの変数
+	[SerializeField] eTEAM m_team;
+		
+
+
 
 	// Start is called before the first frame update
 	void Start()
@@ -98,6 +114,8 @@ public class PlayerController : MonoBehaviour
 		m_moveSpeed = MOVE_SPEED;
 
 		m_isShot = false;
+
+		m_footColliderScript = m_footCollider.GetComponent<FootCollider>();
 	}
 
 	// Update is called once per frame
@@ -112,9 +130,18 @@ public class PlayerController : MonoBehaviour
 		//ショット
 		Shot();
 
+		//接地フラグを足元の当たり判定から取得する
+		m_isLanding = m_footColliderScript.GetIsLanding();
+
+		//接地時はジャンプ時の移動量をゼロにする
+		if (m_isLanding == true)
+			m_jumpVel = Vector3.zero;
+
 		//テキスト更新
 		m_hpText.text = "HP:" + m_hp.ToString();
 		m_ultText.text = "Ult:" + m_ult.ToString();
+
+
 
 	}
 
@@ -123,19 +150,12 @@ public class PlayerController : MonoBehaviour
 
 	}
 
-	private void OnTriggerEnter(Collider other)
+	private void OnTriggerStay(Collider other)
 	{
-		//接地フラグを立てる
-		m_isLanding = true;
-
-		m_jumpVel = Vector3.zero;
 	}
 
 	private void OnTriggerExit(Collider other)
 	{
-		//接地フラグを消す
-		m_isLanding = false;
-
 	}
 
 	//移動
@@ -186,7 +206,7 @@ public class PlayerController : MonoBehaviour
 		}
 
 		//いずれかの方向に移動している場合
-		if (m_vel.magnitude > 0.0f)
+		if (m_vel.magnitude > 0.0f || m_isShot == true)
 		{
 			Vector3 vel = (m_isAvoid == true ? m_avoidVel : m_vel);
 
@@ -201,7 +221,6 @@ public class PlayerController : MonoBehaviour
 				m_rb.AddForce(vel * 500.0f, ForceMode.Force);
 
 
-			Debug.Log(vel);
 			//移動方向に回転
 			//var targetRotatin = Quaternion.LookRotation(vel, Vector3.up);
 
@@ -275,8 +294,24 @@ public class PlayerController : MonoBehaviour
 		}
 		else m_isShot = false;
 
-		Debug.Log(m_isShot);
 	}
 
+	//チームの設定
+	public void SetTeam(eTEAM team)
+	{
+		m_team = team;
+	}
+
+	//チームの取得
+	public eTEAM GetTeam()
+	{
+		return m_team;
+	}
+
+	//ショットフラグの取得
+	public bool GetIsShot()
+	{
+		return m_isShot;
+	}
 
 }
