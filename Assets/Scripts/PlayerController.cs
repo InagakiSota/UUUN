@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cinemachine;
 using UnityEngine.UI;
+using SoftGear.Strix.Unity.Runtime;
 
 //メモ
 //ジャンプ：A
@@ -10,7 +11,7 @@ using UnityEngine.UI;
 //ウルト：
 
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : StrixBehaviour
 {
 	//移動方向
 	private Vector3 m_vel;
@@ -33,6 +34,9 @@ public class PlayerController : MonoBehaviour
 
 	//ジャンプ中の移動量
 	private Vector3 m_jumpVel;
+
+	//ジャンプ入力のフラグ
+	private bool m_isJumpInput;
 
 	//体力
 	public int m_hp;
@@ -86,6 +90,12 @@ public class PlayerController : MonoBehaviour
 	//足元の当たり判定のスクリプト
 	private FootCollider m_footColliderScript;
 
+	//名前のテキスト
+	[SerializeField] Text m_nameText;
+
+	//UIのキャンバス
+	[SerializeField] Canvas m_canvas;
+
 	//チームの列挙体
 	public enum eTEAM
 	{
@@ -115,12 +125,19 @@ public class PlayerController : MonoBehaviour
 
 		m_isShot = false;
 
+		m_isJumpInput = false;
+
 		m_footColliderScript = m_footCollider.GetComponent<FootCollider>();
+
+
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
+		if (!isLocal)
+			return;
+
 		//移動
 		Move();
 		//ジャンプ
@@ -142,11 +159,57 @@ public class PlayerController : MonoBehaviour
 		m_ultText.text = "Ult:" + m_ult.ToString();
 
 
+		var strixNetwork = StrixNetwork.instance;
+
+
+		//m_nameText.text = strixNetwork.selfRoomMember.GetName();
+		//m_canvas.transform.rotation = Camera.main.transform.rotation;
 
 	}
 
 	private void FixedUpdate()
 	{
+		if (!isLocal)
+			return;
+
+		//いずれかの方向に移動している場合
+		if (m_vel.magnitude > 0.0f || m_isShot == true)
+		{
+			Vector3 vel = (m_isAvoid == true ? m_avoidVel : m_vel);
+
+
+			//移動量を座標に加算
+			//m_rb.MovePosition(m_rb.position + vel);
+			if (m_isLanding == true)
+				m_rb.AddForce(vel * 1100.0f, ForceMode.Force);
+			else
+				m_rb.AddForce(vel * 500.0f, ForceMode.Force);
+
+
+			//移動方向に回転
+			//var targetRotatin = Quaternion.LookRotation(vel, Vector3.up);
+
+			var targetRotatin = m_isShot == false ?
+				Quaternion.LookRotation(vel, Vector3.up) :
+				Quaternion.AngleAxis(Camera.main.transform.eulerAngles.y, Vector3.up);
+
+			//回転スピード
+			var rotationSpeed = m_isShot == false ? 600 * Time.deltaTime : 1800 * Time.deltaTime;
+
+
+
+			transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotatin, rotationSpeed);
+		}
+
+		//ジャンプ
+		if (m_isJumpInput == true)
+		{
+			m_rb.AddForce(0.0f, JUMP_FORCE, 0.0f, ForceMode.Impulse);
+			//ジャンプした瞬間の移動量を取得
+			m_jumpVel = m_vel;
+			m_isJumpInput = false;
+		}
+
 
 	}
 
@@ -205,31 +268,6 @@ public class PlayerController : MonoBehaviour
 			m_avoidVel = Vector3.zero;
 		}
 
-		//いずれかの方向に移動している場合
-		if (m_vel.magnitude > 0.0f || m_isShot == true)
-		{
-			Vector3 vel = (m_isAvoid == true ? m_avoidVel : m_vel);
-
-			//回転スピード
-			var rotationSpeed = 600 * Time.deltaTime;
-
-			//移動量を座標に加算
-			//m_rb.MovePosition(m_rb.position + vel);
-			if(m_isLanding == true)
-				m_rb.AddForce(vel * 1100.0f, ForceMode.Force);
-			else
-				m_rb.AddForce(vel * 500.0f, ForceMode.Force);
-
-
-			//移動方向に回転
-			//var targetRotatin = Quaternion.LookRotation(vel, Vector3.up);
-
-			var targetRotatin = m_isShot == false ? 
-				Quaternion.LookRotation(vel, Vector3.up) : 
-				Quaternion.AngleAxis(Camera.main.transform.eulerAngles.y, Vector3.up);
-
-			transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotatin, rotationSpeed);
-		}
 
 	}
 
@@ -237,11 +275,9 @@ public class PlayerController : MonoBehaviour
 	private void Jump()
 	{
 		//スペースキーでジャンプ
-		if (Input.GetButtonDown("Jump") && m_isLanding == true && m_isAvoid == false)
+		if (Input.GetButtonDown("Jump") && m_isLanding == true && m_isAvoid == false && m_isJumpInput == false)
 		{
-			m_rb.AddForce(0.0f, JUMP_FORCE, 0.0f, ForceMode.Impulse);
-			//ジャンプした瞬間の移動量を取得
-			m_jumpVel = m_vel;
+			m_isJumpInput = true;
 		}
 
 	}
